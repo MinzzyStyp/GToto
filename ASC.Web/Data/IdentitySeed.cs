@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using ASC.Web.Configuration;
-using ASC.WEB.Data;
+using ASC.Web.Data;
 namespace ASC.Web.Data
 {
     public class IdentitySeed : IIdentitySeed
