@@ -4,37 +4,34 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using ASC.Utilities;
+
 namespace ASC.Web.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
         private IOptions<ApplicationSettings> _settings;
-
-        public HomeController(
-             //ILogger<HomeController> logger, 
-             IOptions<ApplicationSettings> settings)
+        public HomeController(ILogger<HomeController> logger, IOptions<ApplicationSettings> settings)
         {
-            //_logger = logger;
+            _logger = logger;
             _settings = settings;
         }
 
         public IActionResult Index()
-        { // Thi?t l?p Session
+        {
+            //// Set Session
             HttpContext.Session.SetSession("Test", _settings.Value);
-
-            // L?y Session
+            //// Get Session
             var settings = HttpContext.Session.GetSession<ApplicationSettings>("Test");
+            //// Usage of IOptions
+            ViewBag.Title = _settings.Value.ApplicationTitle;
 
-            // S? d?ng IOptions
-            ViewBag.Title = settings.ApplicationTitle;
-
-            // Tr??ng h?p ki?m th? th?t b?i (?ã comment)
-            // ViewData.Model = "Test";
-            // throw new Exception("??ng nh?p th?t b?i!!!");
-
+            ////Test fail test case
+            //ViewData.Model = "Test";
+            //throw new Exception("Login Fail!!!");
             return View();
         }
+
 
         public IActionResult Privacy()
         {
@@ -46,9 +43,8 @@ namespace ASC.Web.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-        public IActionResult Dashboard()
-        {
-            return View();
-        }
+
+
+
     }
 }

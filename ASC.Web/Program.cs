@@ -1,39 +1,25 @@
-using ASC.DataAccess.Interface;
-using ASC.Solution.Services;
+using ASC.DataAccess;
 using ASC.Web.Configuration;
+using ASC.Solution.Services;
 using ASC.Web.Data;
-using ASC.Web.Services;
-using ASC.Web.Data;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using ASC.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddConfig(builder.Configuration);
+builder.Services.AddMyDependencyGroup();
 
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+// Thêm c?u hình Session
+builder.Services.AddDistributedMemoryCache(); // Thêm b? nh? cache trong memory
+builder.Services.AddSession(options =>
 {
-    options.User.RequireUniqueEmail = true;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
-
-builder.Services.AddScoped<DbContext, ApplicationDbContext>();
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages(); // Ensure Razor Pages services are added
-builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection("AppSettings"));
-builder.Services.AddOptions();
-
-builder.Services.AddTransient<IEmailSender, AuthMessageSender>();
-builder.Services.AddTransient<ISmsSender, AuthMessageSender>();
-builder.Services.AddSingleton<IIdentitySeed, IdentitySeed>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
+    options.IdleTimeout = TimeSpan.FromMinutes(20); // Thi?t l?p th?i gian timeout
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -44,32 +30,44 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
-}//
+}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication(); // Ensure authentication middleware is added
+// Thêm middleware Session
+app.UseSession(); // ??t sau app.UseRouting()
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
+    name: "areaRoute",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}");
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.MapRazorPages();
 
-// Run migrations automatically if needed
+// Seed user data
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    var storageSeed = services.GetRequiredService<IIdentitySeed>();
+    var storageSeed = scope.ServiceProvider.GetRequiredService<IIdentitySeed>();
     await storageSeed.Seed(
-        services.GetRequiredService<UserManager<IdentityUser>>(),
-        services.GetRequiredService<RoleManager<IdentityRole>>(),
-        services.GetRequiredService<IOptions<ApplicationSettings>>()
-    );
+        scope.ServiceProvider.GetService<UserManager<IdentityUser>>(),
+        scope.ServiceProvider.GetService<RoleManager<IdentityRole>>(),
+        scope.ServiceProvider.GetService<IOptions<ApplicationSettings>>());
+}
+
+// CreateNavigationCache
+using (var scope = app.Services.CreateScope())
+{
+    var navigationCacheOperations = scope.ServiceProvider.GetRequiredService<INavigationCacheOperations>();
+    await navigationCacheOperations.CreateNavigationCacheAsync();
 }
 
 app.Run();

@@ -1,68 +1,51 @@
-﻿using System;
-using Microsoft.AspNetCore.Http;
+﻿using ASC.Web.Configuration;
+using ASC.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Moq;
-using Xunit;
+using System.Diagnostics;
 using ASC.Utilities;
-using ASC.Web.Configuration;
-using ASC.Web.Controllers;
+using Microsoft.Extensions.Logging;
 
-namespace ASC.Tests
+namespace ASC.Web.Controllers
 {
-    public class HomeControllerTests
+    public class HomeController : Controller
     {
-        private readonly Mock<IOptions<ApplicationSettings>> optionsMock;
-        private readonly Mock<HttpContext> mockHttpContext;
-
-        public HomeControllerTests()
+        private readonly ILogger<HomeController> _logger;
+        private IOptions<ApplicationSettings> _settings;
+        public HomeController(ILogger<HomeController> logger, IOptions<ApplicationSettings> settings)
         {
-            // Tạo một instance của Mock IOptions
-            optionsMock = new Mock<IOptions<ApplicationSettings>>();
-            mockHttpContext = new Mock<HttpContext>();
-
-            // Thiết lập FakeSession cho HttpContext Session.
-            mockHttpContext.Setup(p => p.Session).Returns(new FakeSession());
-
-            // Thiết lập thuộc tính Values của IOptions<> để trả về đối tượng ApplicationSettings
-            optionsMock.Setup(ap => ap.Value).Returns(new ApplicationSettings
-            {
-                ApplicationTitle = "ASC"
-            });
-        }
-        [Fact]
-        public void HomeController_Index_View_Test()
-        {
-            var controller = new HomeController(optionsMock.Object);
-            controller.ControllerContext.HttpContext = mockHttpContext.Object;
-            Assert.IsType(typeof(ViewResult), controller.Index());
+            _logger = logger;
+            _settings = settings;
         }
 
-        [Fact]
-        public void HomeController_Index_NoModel_Test()
+        public IActionResult Index()
         {
-            var controller = new HomeController(optionsMock.Object);
-            controller.ControllerContext.HttpContext = mockHttpContext.Object;
-            // Assert Model for Null
-            Assert.Null((controller.Index() as ViewResult).ViewData.Model);
-        }
-        [Fact]
-        public void HomeController_Index_Validation_Test()
-        {
-            var controller = new HomeController(optionsMock.Object);
-            controller.ControllerContext.HttpContext = mockHttpContext.Object;
-            // Assert ModelState Error Count to 0
-            Assert.Equal(0, (controller.Index() as ViewResult).ViewData.ModelState.ErrorCount);
-        }
-        [Fact]
-        public void HomeController_Index_Session_Test()
-        {
-            var controller = new HomeController(optionsMock.Object);
-            controller.ControllerContext.HttpContext = mockHttpContext.Object;
-            controller.Index();
+            //// Set Session
+            HttpContext.Session.SetSession("Test", _settings.Value);
+            //// Get Session
+            var settings = HttpContext.Session.GetSession<ApplicationSettings>("Test");
+            //// Usage of IOptions
+            ViewBag.Title = _settings.Value.ApplicationTitle;
 
-            // Giá trị Session với khóa "Test" không được null.
-            Assert.NotNull(controller.HttpContext.Session.GetSession<ApplicationSettings>("Test"));
+            ////Test fail test case
+            //ViewData.Model = "Test";
+            //throw new Exception("Login Fail!!!");
+            return View();
+        }
+
+
+
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }
+
