@@ -27,7 +27,7 @@
         <li>
             <div class="user-view">
                 <div class="background blue-grey lighten-1"></div>
-                <a href="#"><img class="circle" src="~/images/4.jpg"></a>
+                <a href="#"><img class="circle" src="~/images/5.jpg"></a>
                 <a href="#"><span class="white-text name">@currentUser.Name</span></a>
                 <a href="#"><span class="white-text email">@currentUser.Email</span></a>
             </div>
@@ -100,9 +100,7 @@
 
 <form class="hide" method="post" id="resetPassword_form" asp-area="Identity" asp-page="/Account/InitiateResetPassword">
 </form>
-@section Scripts {
-    @RenderSection("Scripts", required: false)
-    <script type="text/javascript">
+@section Scripts { <script type="text/javascript">
         $(function () {
             $('#ancrLogout').click(function () {
                 $('#logout_form').submit();
