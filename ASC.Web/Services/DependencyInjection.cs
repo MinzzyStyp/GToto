@@ -1,4 +1,6 @@
-﻿using ASC.DataAccess;
+﻿using ASC.Business.Interfaces;
+using ASC.Business;
+using ASC.DataAccess;
 using ASC.DataAccess.Interface;
 using ASC.Solution.Services;
 using ASC.Web.Configuration;
@@ -49,7 +51,7 @@ namespace ASC.Web.Services
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
             services.AddSingleton<IIdentitySeed, IdentitySeed>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IunitOfWork, UnitOfWork>();
 
             // Add Cache, Session
             services.AddSession();
@@ -65,6 +67,14 @@ namespace ASC.Web.Services
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddControllersWithViews();
 
+            //Add MasterDataOperations
+            services.AddScoped<IMasterDataOperations, MasterDataOperations>();
+            services.AddAutoMapper(typeof(ApplicationDbContext));
+            //
+            services.AddControllersWithViews().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+            });
             return services;
         }
     }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ASC.DataAccess.Interface
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IunitOfWork : IDisposable
     {
         IRepository<T> Repository<T>() where T : BaseEntity;
         int CommitTransaction();

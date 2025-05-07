@@ -24,7 +24,7 @@ namespace ASC.DataAccess
             entityToInsert.CreatedDate = DateTime.UtcNow;
             entityToInsert.UpdatedDate = DateTime.UtcNow;
             var result = dbContext.Set<T>().AddAsync(entity).Result;
-            return result.Entity;
+            return result as T;
         }
 
         public void Update(T entity)
@@ -45,7 +45,7 @@ namespace ASC.DataAccess
         public async Task<T> FindAsync(string partitionKey, string rowKey)
         {
             var result = dbContext.Set<T>().FindAsync(partitionKey, rowKey).Result;
-            return result;
+            return result as T;
         }
 
         public async Task<IEnumerable<T>> FindAllByPartitionKeyAsync(string partitionKey)
@@ -57,6 +57,7 @@ namespace ASC.DataAccess
         public async Task<IEnumerable<T>> FindAllAsync()
         {
             var result = dbContext.Set<T>().ToListAsync().Result;
+            
             return result as IEnumerable<T>;
         }
     }

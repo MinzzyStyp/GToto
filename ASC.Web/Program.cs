@@ -9,17 +9,16 @@ using Microsoft.Extensions.Options;
 using ASC.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddConfig(builder.Configuration);
-builder.Services.AddMyDependencyGroup();
+builder.Services.AddConfig(builder.Configuration).AddMyDependencyGroup();
 
-// Thêm c?u hình Session
-builder.Services.AddDistributedMemoryCache(); // Thêm b? nh? cache trong memory
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(20); // Thi?t l?p th?i gian timeout
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
+//// Thêm c?u hình Session
+//builder.Services.AddDistributedMemoryCache(); // Thêm b? nh? cache trong memory
+//builder.Services.AddSession(options =>
+//{
+//    options.IdleTimeout = TimeSpan.FromMinutes(20); // Thi?t l?p th?i gian timeout
+//    options.Cookie.HttpOnly = true;
+//    options.Cookie.IsEssential = true;
+//});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

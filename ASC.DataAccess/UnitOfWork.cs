@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ASC.DataAccess.Interface
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IunitOfWork
     {
         private readonly DbContext _dbContext;
         private Dictionary<string, object> _repositories;
