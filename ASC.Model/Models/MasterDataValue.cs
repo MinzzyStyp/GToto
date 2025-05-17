@@ -21,3 +21,4 @@ namespace ASC.Model.Models
         public string Name { get; set; }
     }
 }
+

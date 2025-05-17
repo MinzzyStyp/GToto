@@ -1,15 +1,14 @@
 ﻿using ASC.Business.Interfaces;
 using ASC.DataAccess;
-using ASC.DataAccess.Interface;
 using ASC.Model.Models;
 
 namespace ASC.Business
 {
     public class MasterDataOperations : IMasterDataOperations
     {
-        private readonly IunitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public MasterDataOperations(IunitOfWork unitOfWork)
+        public MasterDataOperations(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
@@ -59,8 +58,7 @@ namespace ASC.Business
 
         public async Task<bool> InsertMasterValueAsync(MasterDataValue value)
         {
-            using (_unitOfWork)
-            {
+            using (_unitOfWork){
                 await _unitOfWork.Repository<MasterDataValue>().AddAsync(value);
                 _unitOfWork.CommitTransaction();
                 return true;
@@ -70,7 +68,7 @@ namespace ASC.Business
         public async Task<bool> UpdateMasterKeyAsync(string orginalPartitionKey, MasterDataKey key)
         {
             using (_unitOfWork)
-            {
+    {
                 var masterKey = await _unitOfWork.Repository<MasterDataKey>().FindAsync(orginalPartitionKey, key.RowKey);
                 masterKey.IsActive = key.IsActive;
                 masterKey.IsDeleted = key.IsDeleted;
@@ -84,7 +82,7 @@ namespace ASC.Business
         public async Task<bool> UpdateMasterValueAsync(string originalPartitionKey, string originalRomKey, MasterDataValue value)
         {
             using (_unitOfWork)
-            {
+    {
                 var masterValue = await _unitOfWork.Repository<MasterDataValue>().
                 FindAsync(originalPartitionKey, originalRomKey);
                 masterValue.IsActive = value.IsActive;
@@ -123,7 +121,7 @@ namespace ASC.Business
                     // Find, if null Insert MasterValue
                     var masterValuesByKey = await GetAllMasterValuesByKeyAsync(value.PartitionKey);
                     var masterValue = masterValuesByKey.FirstOrDefault(p => p.Name == value.Name);
-                    if (masterValue == null)
+                    if (masterValue==null)
                     {
                         await _unitOfWork.Repository<MasterDataValue>().AddAsync(value);
                     }
@@ -134,7 +132,6 @@ namespace ASC.Business
                         masterValue.Name = value.Name;
                         _unitOfWork.Repository<MasterDataValue>().Update(masterValue);
                     }
-                    
                 }
                 _unitOfWork.CommitTransaction();
                 return true;

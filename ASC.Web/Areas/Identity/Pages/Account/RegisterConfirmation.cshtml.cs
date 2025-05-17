@@ -25,8 +25,11 @@ namespace ASC.Web.Areas.Identity.Pages.Account
             _userManager = userManager;
             _sender = sender;
         }
+
         public string Email { get; set; }
+
         public bool DisplayConfirmAccountLink { get; set; }
+
         public string EmailConfirmationUrl { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string email, string returnUrl = null)
@@ -35,7 +38,6 @@ namespace ASC.Web.Areas.Identity.Pages.Account
             {
                 return RedirectToPage("/Index");
             }
-
 
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)

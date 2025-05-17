@@ -2,23 +2,24 @@ using ASC.DataAccess;
 using ASC.Web.Configuration;
 using ASC.Solution.Services;
 using ASC.Web.Data;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ASC.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddConfig(builder.Configuration).AddMyDependencyGroup();
+builder.Services.AddConfig(builder.Configuration);
+builder.Services.AddMyDependencyGroup();
 
-//// Th�m c?u h�nh Session
-//builder.Services.AddDistributedMemoryCache(); // Th�m b? nh? cache trong memory
-//builder.Services.AddSession(options =>
-//{
-//    options.IdleTimeout = TimeSpan.FromMinutes(20); // Thi?t l?p th?i gian timeout
-//    options.Cookie.HttpOnly = true;
-//    options.Cookie.IsEssential = true;
-//});
+// Thêm cấu hình Session
+builder.Services.AddDistributedMemoryCache(); // Thêm bộ nhớ cache trong memory
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(20); // Thiết lập thời gian timeout
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -38,8 +39,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Th�m middleware Session
-app.UseSession(); // ??t sau app.UseRouting()
+// Thêm middleware Session
+app.UseSession(); // Đặt sau app.UseRouting()
 
 app.UseAuthorization();
 
@@ -49,6 +50,7 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 
 app.MapRazorPages();
 
@@ -67,6 +69,13 @@ using (var scope = app.Services.CreateScope())
 {
     var navigationCacheOperations = scope.ServiceProvider.GetRequiredService<INavigationCacheOperations>();
     await navigationCacheOperations.CreateNavigationCacheAsync();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var cacheService = services.GetRequiredService<IMasterDataCacheOperations>();
+    await cacheService.CreateMasterDataCacheAsync();
 }
 
 app.Run();

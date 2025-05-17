@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ASC.Utilities;
 using ASC.Solution.Services;
-using ASC.Web.Services;
 namespace ASC.Web.Areas.Identity.Pages.Account
 {
     public class InitiateResetPasswordModel : PageModel

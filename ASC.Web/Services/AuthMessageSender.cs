@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using System.Net.Mail;
 using MimeKit;
 using MailKit.Net.Smtp;
-using ASC.Web.Services;
 namespace ASC.Solution.Services
 {
     public class AuthMessageSender : IEmailSender, ISmsSender
@@ -22,7 +21,7 @@ namespace ASC.Solution.Services
             emailMessage.Subject = subject;
             emailMessage.Body = new TextPart("plain") { Text = message };
 
-            using (var client = new MailKit.Net.Smtp.SmtpClient())
+            using (var client = new MailKit.Net.Smtp.SmtpClient ())
             {
                 await client.ConnectAsync(_settings.Value.SMTPServer, _settings.Value.SMTPPort, false);
                 await client.AuthenticateAsync(_settings.Value.SMTPAccount, _settings.Value.SMTPPassword);

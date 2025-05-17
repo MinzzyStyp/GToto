@@ -100,7 +100,8 @@
 
 <form class="hide" method="post" id="resetPassword_form" asp-area="Identity" asp-page="/Account/InitiateResetPassword">
 </form>
-@section Scripts { <script type="text/javascript">
+@section Scripts {
+    <script type="text/javascript">
         $(function () {
             $('#ancrLogout').click(function () {
                 $('#logout_form').submit();

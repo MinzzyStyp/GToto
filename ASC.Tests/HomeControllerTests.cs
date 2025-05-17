@@ -1,51 +1,79 @@
 ﻿using ASC.Web.Configuration;
-using ASC.Web.Models;
+using ASC.Web.Controllers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using System.Diagnostics;
-using ASC.Utilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using ASC.Utilities;
+using Xunit;
+using ASC.Tests.TestUtilities;
 
-namespace ASC.Web.Controllers
+namespace ASC.Tests
 {
-    public class HomeController : Controller
+    public class HomeControllerTests
     {
-        private readonly ILogger<HomeController> _logger;
-        private IOptions<ApplicationSettings> _settings;
-        public HomeController(ILogger<HomeController> logger, IOptions<ApplicationSettings> settings)
+        private readonly Mock<IOptions<ApplicationSettings>> optionsMock;
+        private readonly Mock<ILogger<HomeController>> loggerMock;
+        private readonly Mock<HttpContext> mockHttpContext;
+
+        public HomeControllerTests()
         {
-            _logger = logger;
-            _settings = settings;
+            // Tạo mock cho IOptions<ApplicationSettings>
+            optionsMock = new Mock<IOptions<ApplicationSettings>>();
+            // Tạo mock cho ILogger<HomeController>
+            loggerMock = new Mock<ILogger<HomeController>>();
+            // Tạo mock cho HttpContext
+            mockHttpContext = new Mock<HttpContext>();
+            mockHttpContext.Setup(p => p.Session).Returns(new FakeSession());
+
+            // Thiết lập giá trị cho IOptions<ApplicationSettings>
+            optionsMock.Setup(ap => ap.Value).Returns(new ApplicationSettings
+            {
+                ApplicationTitle = "ASC"
+            });
         }
 
-        public IActionResult Index()
+        [Fact]
+        public void HomeController_Index_View_Test()
         {
-            //// Set Session
-            HttpContext.Session.SetSession("Test", _settings.Value);
-            //// Get Session
-            var settings = HttpContext.Session.GetSession<ApplicationSettings>("Test");
-            //// Usage of IOptions
-            ViewBag.Title = _settings.Value.ApplicationTitle;
+            var controller = new HomeController(loggerMock.Object, optionsMock.Object);
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
 
-            ////Test fail test case
-            //ViewData.Model = "Test";
-            //throw new Exception("Login Fail!!!");
-            return View();
+            // Kiểm tra kết quả trả về là ViewResult
+            Assert.IsType<ViewResult>(controller.Index());
         }
 
-
-
-
-        public IActionResult Privacy()
+        [Fact]
+        public void HomeController_Index_NoModel_Test()
         {
-            return View();
+            var controller = new HomeController(loggerMock.Object, optionsMock.Object);
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+
+            // Kiểm tra Model có null không
+            Assert.Null((controller.Index() as ViewResult).ViewData.Model);
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [Fact]
+        public void HomeController_Index_Validation_Test()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var controller = new HomeController(loggerMock.Object, optionsMock.Object);
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+
+            // Kiểm tra lỗi trong ModelState
+            Assert.Equal(0, (controller.Index() as ViewResult).ViewData.ModelState.ErrorCount);
         }
+
+        [Fact]
+        public void HomeController_Index_Session_Test()
+        {
+            var controller = new HomeController(loggerMock.Object, optionsMock.Object);
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+            controller.Index();
+
+            // Session value with key "Test" should not be null.
+            Assert.NotNull(controller.HttpContext.Session.GetSession<ApplicationSettings>("Test"));
+        }
+
     }
 }
-

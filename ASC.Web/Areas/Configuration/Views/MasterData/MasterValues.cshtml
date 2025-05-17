@@ -133,7 +133,7 @@
     </div>
 </div>
 
-@section Scripts {
+@section Scripts{
     <!-- jQuery -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
@@ -147,7 +147,7 @@
 
     <script>
         $(document).ready(function () {
-            var token = $('input[type=hidden][name=__RequestVerificationToken]', document).val();
+            var token = $('input[type=hidden][name=__RequestVerificationToken]',document).val();
             $.ajaxSetup({
                 // Disable caching of AJAX responses
                 cache: false,
@@ -219,7 +219,8 @@
                 $('.validation-summary-valid').find('ul').html('');
             });
             // On Click of Edit icon, populate the details section with details of service engineer
-            $(document).on("click", ".edit", function () {
+            $(document).on("click", ".edit", function () 
+            {
                 console.log("Test");
                 var user = $(this).closest('table').DataTable().row($(this).parents('tr')).data();
                 console.log(user);
@@ -253,7 +254,8 @@
             // Save/Create Button Click Event
             $(document).on('click', '.btnSubmit', function () {
                 var form = $('#formMasterValue');
-                if ($(form).valid()) {
+                if ($(form).valid()) 
+                {
                     // Create the POST Object
                     var masterData = new Object();
                     masterData.Name = $('#MasterValueInContext_Name').val();

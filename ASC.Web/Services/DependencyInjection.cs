@@ -1,7 +1,6 @@
 ﻿using ASC.Business.Interfaces;
 using ASC.Business;
 using ASC.DataAccess;
-using ASC.DataAccess.Interface;
 using ASC.Solution.Services;
 using ASC.Web.Configuration;
 using ASC.Web.Data;
@@ -15,16 +14,23 @@ namespace ASC.Web.Services
         //Config services
         public static IServiceCollection AddConfig(this IServiceCollection services, IConfiguration config)
         {
+
             // Add AddDbContext with connectionString to mirage database
             var connectionString = config.GetConnectionString("DefaultConnection") ??
                 throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
-
             //Add Options and get data from appsettings.json with "AppSettings"
-            services.AddOptions(); // Option
+            services.AddOptions();//IOption
             services.Configure<ApplicationSettings>(config.GetSection("AppSettings"));
 
-            services.AddAuthentication()
+            //Using a Gmail Authentication Provider for Customer Authentication
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+                options.DefaultChallengeScheme = "Google"; // hoặc Cookie nếu bạn có nhiều provider
+            })
+                .AddCookie() // <- thêm dòng này nếu chưa có
                 .AddGoogle(options =>
                 {
                     IConfigurationSection googleAuthNSection = config.GetSection("Authentication:Google");
@@ -32,6 +38,17 @@ namespace ASC.Web.Services
                     options.ClientSecret = config["Google:Identity:ClientSecret"];
                 });
 
+            //....
+            services.AddControllersWithViews().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+            });
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = config.GetSection("CacheSettings:CacheConnectionString").Value;
+                options.InstanceName = config.GetSection("CacheSettings:CacheInstance").Value;
+            });
             return services;
         }
 
@@ -51,7 +68,7 @@ namespace ASC.Web.Services
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
             services.AddSingleton<IIdentitySeed, IdentitySeed>();
-            services.AddScoped<IunitOfWork, UnitOfWork>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // Add Cache, Session
             services.AddSession();
@@ -61,6 +78,8 @@ namespace ASC.Web.Services
             services.AddSingleton<INavigationCacheOperations, NavigationCacheOperations>();
 
             //....
+            services.AddScoped<IMasterDataCacheOperations, MasterDataCacheOperations>();
+            services.AddScoped<IServiceRequestOperations, ServiceRequestOperations>();
 
             //Add RazorPages, MVC
             services.AddRazorPages();
@@ -71,10 +90,6 @@ namespace ASC.Web.Services
             services.AddScoped<IMasterDataOperations, MasterDataOperations>();
             services.AddAutoMapper(typeof(ApplicationDbContext));
             //
-            services.AddControllersWithViews().AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.PropertyNamingPolicy = null;
-            });
             return services;
         }
     }
